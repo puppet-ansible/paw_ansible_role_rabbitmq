@@ -1,0 +1,104 @@
+{
+  "puppet_task_version": 1,
+  "supports_noop": false,
+  "description": "Execute the entire Ansible role imperatively",
+  "input_method": "environment",
+  "parameters": {
+    "rabbitmq_daemon": {
+      "description": "Ansible role variable (default: rabbitmq-server)",
+      "type": "Optional[String]"
+    },
+    "rabbitmq_state": {
+      "description": "Ansible role variable (default: started)",
+      "type": "Optional[String]"
+    },
+    "rabbitmq_enabled": {
+      "description": "Ansible role variable (default: true)",
+      "type": "Optional[Boolean]"
+    },
+    "rabbitmq_version": {
+      "description": "Ansible role variable (default: 3.12.2)",
+      "type": "Optional[String]"
+    },
+    "rabbitmq_rpm": {
+      "description": "Ansible role variable (default: rabbitmq-server-{{ rabbitmq_version }}-1.el8.noarch.rpm)",
+      "type": "Optional[String]"
+    },
+    "rabbitmq_rpm_url": {
+      "description": "Ansible role variable (default: https://github.com/rabbitmq/rabbitmq-server/releases/download/v{{ rabbitmq_version }}/{{ rabbitmq_rpm }})",
+      "type": "Optional[String]"
+    },
+    "rabbitmq_rpm_gpg_url": {
+      "description": "Ansible role variable (default: https://www.rabbitmq.com/rabbitmq-release-signing-key.asc)",
+      "type": "Optional[String]"
+    },
+    "rabbitmq_apt_repository": {
+      "description": "Ansible role variable (default: https://ppa1.rabbitmq.com/rabbitmq/rabbitmq-server/deb/{{ ansible_distribution | lower }})",
+      "type": "Optional[String]"
+    },
+    "rabbitmq_apt_gpg_url": {
+      "description": "Ansible role variable (default: https://github.com/rabbitmq/signing-keys/releases/download/3.0/cloudsmith.rabbitmq-server.9F4587F226208342.key)",
+      "type": "Optional[String]"
+    },
+    "erlang_apt_repository": {
+      "description": "Ansible role variable (default: https://ppa1.rabbitmq.com/rabbitmq/rabbitmq-erlang/deb/{{ ansible_distribution | lower }})",
+      "type": "Optional[String]"
+    },
+    "erlang_apt_gpg_url": {
+      "description": "Ansible role variable (default: https://github.com/rabbitmq/signing-keys/releases/download/3.0/cloudsmith.rabbitmq-erlang.E495BB49CC4BBE5B.key)",
+      "type": "Optional[String]"
+    },
+    "par_tags": {
+      "description": "An array of Ansible tags to execute (optional)",
+      "type": "Optional[Array[String]]"
+    },
+    "par_skip_tags": {
+      "description": "An array of Ansible tags to skip (optional)",
+      "type": "Optional[Array[String]]"
+    },
+    "par_start_at_task": {
+      "description": "The name of the task to start execution at (optional)",
+      "type": "Optional[String]"
+    },
+    "par_limit": {
+      "description": "Limit playbook execution to specific hosts (optional)",
+      "type": "Optional[String]"
+    },
+    "par_verbose": {
+      "description": "Enable verbose output from Ansible (optional)",
+      "type": "Optional[Boolean]"
+    },
+    "par_check_mode": {
+      "description": "Run Ansible in check mode (dry-run) (optional)",
+      "type": "Optional[Boolean]"
+    },
+    "par_timeout": {
+      "description": "Timeout in seconds for playbook execution (optional)",
+      "type": "Optional[Integer]"
+    },
+    "par_user": {
+      "description": "Remote user to use for Ansible connections (optional)",
+      "type": "Optional[String]"
+    },
+    "par_env_vars": {
+      "description": "Additional environment variables for ansible-playbook execution (optional)",
+      "type": "Optional[Hash]"
+    }
+  },
+  "implementations": [
+    {
+      "name": "paw_ansible_role_rabbitmq.sh",
+      "requirements": [
+        "shell"
+      ],
+      "input_method": "environment"
+    },
+    {
+      "name": "paw_ansible_role_rabbitmq.ps1",
+      "requirements": [
+        "powershell"
+      ],
+      "input_method": "environment"
+    }
+  ]
+}

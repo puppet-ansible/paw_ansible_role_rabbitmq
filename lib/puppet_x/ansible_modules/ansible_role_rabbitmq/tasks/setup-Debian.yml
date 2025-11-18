@@ -1,0 +1,53 @@
+---
+# See: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=863199 and
+# https://github.com/geerlingguy/ansible-role-java/issues/64
+- name: Ensure 'man' directory exists.
+  ansible.builtin.file: # noqa risky-file-permissions
+    path: /usr/share/man/man1
+    state: directory
+    mode: "0755"
+    recurse: true
+  when:
+    - ansible_distribution == 'Ubuntu'
+    - ansible_distribution_major_version | int >= 18
+
+- name: Add Erlang repository
+  ansible.builtin.deb822_repository:
+    components: main
+    name: erlang
+    signed_by: "{{ erlang_apt_gpg_url }}"
+    suites: "{{ ansible_distribution_release }}"
+    uris: ["{{ erlang_apt_repository }}"]
+    types: deb
+
+- name: Add RabbitMQ repository
+  ansible.builtin.deb822_repository:
+    components: main
+    name: rabbitmq
+    signed_by: "{{ rabbitmq_apt_gpg_url }}"
+    suites: "{{ ansible_distribution_release }}"
+    uris: ["{{ rabbitmq_apt_repository }}"]
+    types: deb
+
+# https://www.rabbitmq.com/docs/which-erlang
+- name: Setup Erlang version pin
+  ansible.builtin.template:
+    src: apt_pin.j2
+    dest: "/etc/apt/preferences.d/erlang"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Update apt cache.
+  apt: update_cache=true
+  when: ansible_os_family == 'Debian'
+
+- name: Ensure erlang is installed.
+  ansible.builtin.package:
+    name: erlang
+    state: present
+
+- name: Ensure RabbitMQ is installed.
+  ansible.builtin.apt:
+    name: rabbitmq-server={{ rabbitmq_version }}-1
+    state: present
