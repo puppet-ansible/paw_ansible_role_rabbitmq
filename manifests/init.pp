@@ -12,6 +12,7 @@
 # @param rabbitmq_apt_gpg_url
 # @param erlang_apt_repository
 # @param erlang_apt_gpg_url
+# @param par_vardir Base directory for Puppet agent cache (uses lookup('paw::par_vardir') for common config)
 # @param par_tags An array of Ansible tags to execute (optional)
 # @param par_skip_tags An array of Ansible tags to skip (optional)
 # @param par_start_at_task The name of the task to start execution at (optional)
@@ -31,10 +32,11 @@ class paw_ansible_role_rabbitmq (
   String $rabbitmq_rpm = 'rabbitmq-server-{{ rabbitmq_version }}-1.el8.noarch.rpm',
   String $rabbitmq_rpm_url = 'https://github.com/rabbitmq/rabbitmq-server/releases/download/v{{ rabbitmq_version }}/{{ rabbitmq_rpm }}',
   String $rabbitmq_rpm_gpg_url = 'https://www.rabbitmq.com/rabbitmq-release-signing-key.asc',
-  String $rabbitmq_apt_repository = 'https://ppa1.rabbitmq.com/rabbitmq/rabbitmq-server/deb/{{ ansible_distribution | lower }}',
-  String $rabbitmq_apt_gpg_url = 'https://github.com/rabbitmq/signing-keys/releases/download/3.0/cloudsmith.rabbitmq-server.9F4587F226208342.key',
-  String $erlang_apt_repository = 'https://ppa1.rabbitmq.com/rabbitmq/rabbitmq-erlang/deb/{{ ansible_distribution | lower }}',
-  String $erlang_apt_gpg_url = 'https://github.com/rabbitmq/signing-keys/releases/download/3.0/cloudsmith.rabbitmq-erlang.E495BB49CC4BBE5B.key',
+  String $rabbitmq_apt_repository = 'https://deb1.rabbitmq.com/rabbitmq-server/{{ ansible_facts.distribution | lower }}/{{ ansible_facts.distribution_release }}',
+  String $rabbitmq_apt_gpg_url = 'https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA',
+  String $erlang_apt_repository = 'https://deb1.rabbitmq.com/rabbitmq-erlang/{{ ansible_facts.distribution | lower }}/{{ ansible_facts.distribution_release }}',
+  String $erlang_apt_gpg_url = 'https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA',
+  Optional[Stdlib::Absolutepath] $par_vardir = undef,
   Optional[Array[String]] $par_tags = undef,
   Optional[Array[String]] $par_skip_tags = undef,
   Optional[String] $par_start_at_task = undef,
@@ -48,14 +50,13 @@ class paw_ansible_role_rabbitmq (
   Optional[Boolean] $par_exclusive = undef
 ) {
 # Execute the Ansible role using PAR (Puppet Ansible Runner)
-  $vardir = $facts['puppet_vardir'] ? {
-    undef   => $settings::vardir ? {
-      undef   => '/opt/puppetlabs/puppet/cache',
-      default => $settings::vardir,
-    },
-    default => $facts['puppet_vardir'],
+# Playbook synced via pluginsync to agent's cache directory
+# Check for common paw::par_vardir setting, then module-specific, then default
+  $_par_vardir = $par_vardir ? {
+    undef   => lookup('paw::par_vardir', Stdlib::Absolutepath, 'first', '/opt/puppetlabs/puppet/cache'),
+    default => $par_vardir,
   }
-  $playbook_path = "${vardir}/lib/puppet_x/ansible_modules/ansible_role_rabbitmq/playbook.yml"
+  $playbook_path = "${_par_vardir}/lib/puppet_x/ansible_modules/ansible_role_rabbitmq/playbook.yml"
 
   par { 'paw_ansible_role_rabbitmq-main':
     ensure        => present,
